@@ -51,6 +51,64 @@ impl Shape {
     }
 }
 
+impl World{
+    fn new(width: u32, height: u32) -> World {
+        World {
+            current_turn: 0,
+            shapes: Vec::<Box<Shape>>::new(),
+            height: height,
+            width: width,
+        }
+    }
+
+    fn add_shapes(&mut self, n: usize) {
+        let x = (self.width / 2) as f64;
+        let y = (self.height / 2) as f64;
+
+        for _ in 0..n {
+            self.shapes.push(Box::new(Shape::new(x, y)));
+        }
+    }
+
+    fn remove_shapes(&mut self, n: usize){
+        let n_shapes = self.shapes.len();
+
+        let to_remove = if n > n_shapes{
+            n_shapes
+        } else{
+            n
+        };
+
+        for _ in 0..to_remove{
+            self.shapes.remove(0);
+        }
+
+        self.shapes.shrink_to_fit();
+    }
+
+    fn calc_population_change(&self) -> isize {
+        const N: f64 = N_PARTICLES as f64;
+        const MAX: f64 = N*0.5;
+        const MIN: f64 = -N*0.5;
+        let x: f64 = self.current_turn as f64;
+
+        let n = 0.4*N*(0.1*x).sin() + 0.1*N*x.sin();
+        n.max(MIN).min(MAX).round() as isize
+    }
+
+    fn update(&mut self) {
+        let n = self.calc_population_change();
+
+        if n > 0{
+            self.add_shapes(n as usize);
+        }else{
+            self.remove_shapes(n.abs() as usize);
+        }
+
+        self.current_turn += 1;
+    }
+}
+
 fn main() {
     println!("Hello, world!");
 }
