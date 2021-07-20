@@ -110,5 +110,30 @@ impl World{
 }
 
 fn main() {
-    println!("Hello, world!");
+    let(width, height) = (640, 480);
+    let mut window: PistonWindow = 
+        WindowSettings::new("particles", [width, height])
+        .exit_on_esc(true)
+        .build()
+        .expect("Could not create a window.");
+    
+    let mut world = World::new(width, height);
+    world.add_shapes(N_PARTICLES);
+
+    while let Some(event) = window.next() {
+        for shape in &mut world.shapes{
+            shape.update();
+        }
+
+        world.update();
+
+        window.draw_2d(&event , |ctx, renderer|{
+            clear(WHITE, renderer);
+            for s in &mut world.shapes{
+                let rect = [s.position[0], s.position[1], s.width, s.height];
+                let transformation_matrix = ctx.transform;
+                rectangle(s.color, rect, transformation_matrix, renderer);
+            }
+        });
+    }
 }
